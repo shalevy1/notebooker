@@ -1,2 +1,3 @@
 recursive-include notebooker/web/templates *
 recursive-include notebooker/web/static *
+recursive-include notebooker/nbtemplates *
