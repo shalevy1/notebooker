@@ -4,7 +4,7 @@ from logging import getLogger
 
 import click
 
-from notebooker.serialization.serialization import Serializer, get_serializer_from_cls
+from notebooker.serialization.serialization import get_serializer_from_cls
 from notebooker.utils.results import get_latest_successful_job_results_all_params
 
 logger = getLogger(__name__)
@@ -30,7 +30,7 @@ logger = getLogger(__name__)
 )
 @click.option(
     "--serializer-cls",
-    default=Serializer.PYMONGO.value,
+    default=PyMongoResultSerializer.get_name(),
     help="The serializer class through which we will save the notebook result.",
 )
 def snapshot_latest_successful_notebooks(

@@ -2,15 +2,12 @@ import logging
 import os
 from enum import Enum
 
-from notebooker.serialization.mongo import NotebookResultSerializer
-from notebooker.serialization.serializers import PyMongoNotebookResultSerializer
+from notebooker.serialization.mongo import MongoResultSerializer
+from notebooker.serializers.pymongo import PyMongoResultSerializer
+from . import ALL_SERIALIZERS
 
 
 logger = logging.getLogger(__name__)
-
-
-class Serializer(Enum):
-    PYMONGO = "PyMongoNotebookResultSerializer"
 
 
 def serializer_kwargs_from_os_envs():
@@ -23,14 +20,20 @@ def serializer_kwargs_from_os_envs():
     }
 
 
-def get_serializer_from_cls(serializer_cls: str, **kwargs: dict) -> NotebookResultSerializer:
-    if serializer_cls == Serializer.PYMONGO.value:
-        return PyMongoNotebookResultSerializer(**kwargs)
-    else:
-        raise ValueError("Unspported serializer {}".format(serializer_cls))
+def get_serializer_from_cls(serializer_cls: str, **kwargs: dict) -> MongoResultSerializer:
+    serializer = ALL_SERIALIZERS.get(serializer_cls)
+    if serializer is None:
+        raise ValueError("Unsupported serializer {}".format(serializer_cls))
+    return serializer(**kwargs)
 
 
-def get_fresh_serializer() -> NotebookResultSerializer:
-    serializer_cls = os.environ.get("NOTEBOOK_SERIALIZER", Serializer.PYMONGO.value)
+def get_fresh_serializer() -> MongoResultSerializer:
+    serializer_cls = os.environ.get("NOTEBOOK_SERIALIZER", PyMongoResultSerializer.get_name())
     serializer_kwargs = serializer_kwargs_from_os_envs()
     return get_serializer_from_cls(serializer_cls, **serializer_kwargs)
+
+
+if __name__ == "__main__":
+    from . import ALL_SERIALIZERS
+
+    print(ALL_SERIALIZERS)

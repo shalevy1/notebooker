@@ -7,7 +7,7 @@ from nbformat import __version__ as nbv
 
 from notebooker import execute_notebook
 from notebooker.constants import NotebookResultComplete
-from notebooker.serialization.serializers import PyMongoNotebookResultSerializer
+from notebooker.serializers.pymongo import PyMongoResultSerializer
 
 
 def mock_nb_execute(input_path, output_path, **kw):
@@ -33,7 +33,7 @@ def test_main(mongo_host):
             execute_notebook.main, ["--report-name", "test_report", "--mongo-host", mongo_host, "--job-id", job_id]
         )
         assert cli_result.exit_code == 0
-        serializer = PyMongoNotebookResultSerializer(
+        serializer = PyMongoResultSerializer(
             mongo_host=mongo_host, database_name="notebooker", result_collection_name="NOTEBOOK_OUTPUT"
         )
         result = serializer.get_check_result(job_id)

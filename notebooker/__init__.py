@@ -1,1 +1,2 @@
+__import__("pkg_resources").declare_namespace(__name__)
 from ._version import __version__

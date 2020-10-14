@@ -18,7 +18,7 @@ from notebooker.constants import (
 logger = getLogger(__name__)
 
 
-class NotebookResultSerializer(object):
+class MongoResultSerializer(object):
     # This class is the interface between Mongo and the rest of the application
 
     def __init__(self, database_name="notebooker", mongo_host="localhost", result_collection_name="NOTEBOOK_OUTPUT"):
@@ -28,6 +28,10 @@ class NotebookResultSerializer(object):
         mongo_connection = self.get_mongo_database()
         self.library = mongo_connection[result_collection_name]
         self.result_data_store = gridfs.GridFS(mongo_connection, "notebook_data")
+
+    @classmethod
+    def get_name(cls):
+        return cls.__name__
 
     def get_mongo_database(self):
         raise NotImplementedError()
@@ -42,7 +46,7 @@ class NotebookResultSerializer(object):
         # Ensure that the job_id index exists
         self.library.create_index([("job_id", pymongo.ASCENDING)], background=True)
         self.library.create_index([("report_name", pymongo.ASCENDING)], background=True)
-        self.library.create_index([('update_time', pymongo.DESCENDING)], background=True)
+        self.library.create_index([("update_time", pymongo.DESCENDING)], background=True)
         self.library.create_index([("status", pymongo.ASCENDING), ("update_time", pymongo.DESCENDING)], background=True)
 
     def _save_to_db(self, notebook_result):

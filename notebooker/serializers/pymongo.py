@@ -1,9 +1,9 @@
 from pymongo import MongoClient
 
-from notebooker.serialization.mongo import NotebookResultSerializer
+from notebooker.serialization.mongo import MongoResultSerializer
 
 
-class PyMongoNotebookResultSerializer(NotebookResultSerializer):
+class PyMongoResultSerializer(MongoResultSerializer):
     def __init__(
         self,
         user=None,
@@ -15,7 +15,10 @@ class PyMongoNotebookResultSerializer(NotebookResultSerializer):
     ):
         self.user = user or None
         self.password = password or None
-        super(PyMongoNotebookResultSerializer, self).__init__(database_name, mongo_host, result_collection_name)
+        super(PyMongoResultSerializer, self).__init__(database_name, mongo_host, result_collection_name)
 
     def get_mongo_database(self):
         return MongoClient(self.mongo_host, username=self.user, password=self.password).get_database(self.database_name)
+
+
+name = PyMongoResultSerializer.get_name()

@@ -1,4 +1,4 @@
-from notebooker.serialization.serialization import Serializer
+from notebooker.serializers.pymongo import PyMongoResultSerializer
 
 
 class BaseConfig:
@@ -33,7 +33,7 @@ class BaseConfig:
     GIT_REPO_TEMPLATE_DIR: str = ""
 
     # --- Serializer-specific --- #
-    NOTEBOOK_SERIALIZER: str = Serializer.PYMONGO.value  # The Serializer we are using as our backend storage.
+    NOTEBOOK_SERIALIZER: str = PyMongoResultSerializer.get_name()  # The Serializer we are using as our backend storage.
     MONGO_HOST: str = "localhost"  # The environment to which pymongo is connecting.
     MONGO_USER: str = ""  # The username which we are connecting to pymongo with.
     MONGO_PASSWORD: str = ""  # The mongo user's password.

@@ -13,7 +13,8 @@ import click
 import papermill as pm
 
 from notebooker.constants import CANCEL_MESSAGE, JobStatus, NotebookResultComplete, NotebookResultError
-from notebooker.serialization.serialization import Serializer, get_serializer_from_cls
+from notebooker.serialization.serialization import get_serializer_from_cls
+from notebooker.serializers.pymongo import PyMongoResultSerializer
 from notebooker.utils.conversion import _output_ipynb_name, generate_ipynb_from_py, ipython_to_html, ipython_to_pdf
 from notebooker.utils.filesystem import _cleanup_dirs, initialise_base_dirs
 from notebooker.utils.notebook_execution import _output_dir, send_result_email
@@ -306,7 +307,7 @@ def _get_overrides(overrides_as_json: AnyStr, iterate_override_values_of: Option
 @click.option("--pdf-output/--no-pdf-output", default=True, help="Whether we generate PDF output or not.")
 @click.option(
     "--serializer-cls",
-    default=Serializer.PYMONGO.value,
+    default=PyMongoResultSerializer.get_name(),
     help="The serializer class through which we will save the notebook result.",
 )
 @click.option(

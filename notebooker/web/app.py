@@ -68,9 +68,9 @@ def setup_env_vars():
     Returns a list of the environment variables which were changed.
     """
     notebooker_environment = os.getenv("NOTEBOOKER_ENVIRONMENT", "Dev")
-    from .config import settings
+    import notebooker.web.settings
 
-    config = getattr(settings, f"{notebooker_environment}Config")()
+    config = getattr(notebooker.web.settings, f"{notebooker_environment}Config")()
     set_vars = []
     logger.info("Running Notebooker with the following params:")
     for attribute in (c for c in dir(config) if "__" not in c):

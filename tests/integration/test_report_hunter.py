@@ -5,8 +5,7 @@ import freezegun
 import pytest
 
 from notebooker.constants import JobStatus, NotebookResultComplete, NotebookResultError, NotebookResultPending
-from notebooker.serialization.serialization import Serializer
-from notebooker.serialization.serializers import PyMongoNotebookResultSerializer
+from notebooker.serializers.pymongo import PyMongoResultSerializer
 from notebooker.utils.caching import get_report_cache
 from notebooker.utils.filesystem import initialise_base_dirs
 from notebooker.web.report_hunter import _report_hunter
@@ -17,7 +16,7 @@ from ..utils import setup_and_cleanup_notebooker_filesystem
 @setup_and_cleanup_notebooker_filesystem
 def test_report_hunter_with_nothing(bson_library, mongo_host, test_db_name, test_lib_name):
     _report_hunter(
-        Serializer.PYMONGO.value,
+        PyMongoResultSerializer.get_name(),
         mongo_host=mongo_host,
         database_name=test_db_name,
         result_collection_name=test_lib_name,
@@ -28,7 +27,7 @@ def test_report_hunter_with_nothing(bson_library, mongo_host, test_db_name, test
 @setup_and_cleanup_notebooker_filesystem
 @freezegun.freeze_time(datetime.datetime(2018, 1, 12))
 def test_report_hunter_with_one(bson_library, mongo_host, test_db_name, test_lib_name):
-    serializer = PyMongoNotebookResultSerializer(
+    serializer = PyMongoResultSerializer(
         database_name=test_db_name, mongo_host=mongo_host, result_collection_name=test_lib_name
     )
 
@@ -36,7 +35,7 @@ def test_report_hunter_with_one(bson_library, mongo_host, test_db_name, test_lib
     report_name = str(uuid.uuid4())
     serializer.save_check_stub(job_id, report_name)
     _report_hunter(
-        Serializer.PYMONGO.value,
+        PyMongoResultSerializer.get_name(),
         mongo_host=mongo_host,
         database_name=test_db_name,
         result_collection_name=test_lib_name,
@@ -55,7 +54,7 @@ def test_report_hunter_with_one(bson_library, mongo_host, test_db_name, test_lib
 @setup_and_cleanup_notebooker_filesystem
 def test_report_hunter_with_status_change(bson_library, mongo_host, test_db_name, test_lib_name):
     initialise_base_dirs()
-    serializer = PyMongoNotebookResultSerializer(
+    serializer = PyMongoResultSerializer(
         database_name=test_db_name, mongo_host=mongo_host, result_collection_name=test_lib_name
     )
 
@@ -64,7 +63,7 @@ def test_report_hunter_with_status_change(bson_library, mongo_host, test_db_name
     with freezegun.freeze_time(datetime.datetime(2018, 1, 12, 2, 30)):
         serializer.save_check_stub(job_id, report_name)
         _report_hunter(
-            Serializer.PYMONGO.value,
+            PyMongoResultSerializer.get_name(),
             mongo_host=mongo_host,
             database_name=test_db_name,
             result_collection_name=test_lib_name,
@@ -82,7 +81,7 @@ def test_report_hunter_with_status_change(bson_library, mongo_host, test_db_name
     with freezegun.freeze_time(datetime.datetime(2018, 1, 12, 2, 32)):
         serializer.update_check_status(job_id, JobStatus.CANCELLED, error_info="This was cancelled!")
         _report_hunter(
-            Serializer.PYMONGO.value,
+            PyMongoResultSerializer.get_name(),
             mongo_host=mongo_host,
             database_name=test_db_name,
             result_collection_name=test_lib_name,
@@ -117,14 +116,14 @@ def test_report_hunter_timeout(
     job_id = str(uuid.uuid4())
     report_name = str(uuid.uuid4())
 
-    serializer = PyMongoNotebookResultSerializer(
+    serializer = PyMongoResultSerializer(
         database_name=test_db_name, mongo_host=mongo_host, result_collection_name=test_lib_name
     )
     start_time = time_now = datetime.datetime(2018, 1, 12, 2, 30)
     with freezegun.freeze_time(time_now):
         serializer.save_check_stub(job_id, report_name, status=status)
         _report_hunter(
-            Serializer.PYMONGO.value,
+            PyMongoResultSerializer.get_name(),
             mongo_host=mongo_host,
             database_name=test_db_name,
             result_collection_name=test_lib_name,
@@ -143,7 +142,7 @@ def test_report_hunter_timeout(
     time_now += time_later
     with freezegun.freeze_time(time_now):
         _report_hunter(
-            Serializer.PYMONGO.value,
+            PyMongoResultSerializer.get_name(),
             mongo_host=mongo_host,
             database_name=test_db_name,
             result_collection_name=test_lib_name,
@@ -173,14 +172,14 @@ def test_report_hunter_timeout(
 def test_report_hunter_pending_to_done(bson_library, mongo_host, test_db_name, test_lib_name):
     job_id = str(uuid.uuid4())
     report_name = str(uuid.uuid4())
-    serializer = PyMongoNotebookResultSerializer(
+    serializer = PyMongoResultSerializer(
         database_name=test_db_name, mongo_host=mongo_host, result_collection_name=test_lib_name
     )
 
     with freezegun.freeze_time(datetime.datetime(2018, 1, 12, 2, 30)):
         serializer.save_check_stub(job_id, report_name, status=JobStatus.SUBMITTED)
         _report_hunter(
-            Serializer.PYMONGO.value,
+            PyMongoResultSerializer.get_name(),
             mongo_host=mongo_host,
             database_name=test_db_name,
             result_collection_name=test_lib_name,
@@ -199,7 +198,7 @@ def test_report_hunter_pending_to_done(bson_library, mongo_host, test_db_name, t
     with freezegun.freeze_time(datetime.datetime(2018, 1, 12, 2, 32)):
         serializer.update_check_status(job_id, JobStatus.PENDING)
         _report_hunter(
-            Serializer.PYMONGO.value,
+            PyMongoResultSerializer.get_name(),
             mongo_host=mongo_host,
             database_name=test_db_name,
             result_collection_name=test_lib_name,
@@ -227,7 +226,7 @@ def test_report_hunter_pending_to_done(bson_library, mongo_host, test_db_name, t
             raw_html="",
         )
         _report_hunter(
-            Serializer.PYMONGO.value,
+            PyMongoResultSerializer.get_name(),
             mongo_host=mongo_host,
             database_name=test_db_name,
             result_collection_name=test_lib_name,
